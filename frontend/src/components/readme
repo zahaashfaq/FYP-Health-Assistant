@@ -1,0 +1,14 @@
+💻 Backend README: FitBot.Api🤖 Project OverviewFitBot.Api is the secure, data-driven backend for the FitBot AI fitness application. It handles user authentication, profile data persistence, and fitness metrics (like BMI logs).🛠️ Technology StackFramework: ASP.NET Core 8.0 Web API (C#)Database: Entity Framework Core (Code First) with MSSQL LocalDBAuthentication: JSON Web Tokens (JWT)Password Hashing: BCrypt.Net🚀 Getting Started1. Prerequisites.NET 8 SDKSQL Server LocalDB (or any configured SQL Server instance)2. ConfigurationDatabase: Update appsettings.json (and appsettings.Development.json) with your database connection string.JSON"ConnectionStrings": {
+  "DefaultConnection": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=FitBot;Integrated Security=True;"
+}
+Security: Ensure the JWT secret key is properly configured for token signing. It must be at least 64 characters long for the HMAC SHA512 algorithm used.JSON"Jwt": {
+  "Key": "ThisIsAVeryLongRandomStringForSecurityReasons12345!@#$%" 
+}
+3. Database Setup (Migrations)Open the Package Manager Console in Visual Studio and run the following commands to create/update the necessary tables (Users, UserProfiles, BmiLogs):PowerShellAdd-Migration InitialSetup
+Update-Database
+4. Running the APIBash# Install dependencies (if needed)
+dotnet restore
+
+# Run the API
+dotnet run
+The API should launch, typically running on https://localhost:7176.🔑 Key EndpointsEndpointMethodFunctionSecurity/api/auth/registerPOSTCreates a new user.Public/api/auth/loginPOSTAuthenticates user and returns JWT token and hasProfile status.Public/api/profile/onboardingPOSTCreates the initial UserProfile and BmiLog record.Requires Auth/api/profile/meGETRetrieves the user's current UserProfile data.Requires Auth/api/profile/updatePUTUpdates profile details (Age, Weight, Goals, etc.).Requires Auth/api/profile/bmi-logsGETRetrieves the history of BMI/weight entries.Requires Auth

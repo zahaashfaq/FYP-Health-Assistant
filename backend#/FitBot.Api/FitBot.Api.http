@@ -1,0 +1,27 @@
+@FitBot.Api_HostAddress = http://localhost:5076
+
+GET {{FitBot.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+# Auth - Forgot password (sends reset token; in production you'd email it)
+POST {{FitBot.Api_HostAddress}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+
+###
+
+# Auth - Reset password (use token from forgot-password flow)
+POST {{FitBot.Api_HostAddress}}/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "your-reset-token-here",
+  "newPassword": "NewSecurePassword123!"
+}
+
+###
