@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\zahar\FYP-Health-Assistant\fitbot-pose-service\venv
+set VIRTUAL_ENV=E:\fyp\FYP-Health-Assistant\fitbot-pose-service\venv
 
 if not defined PROMPT set PROMPT=$P$G
 

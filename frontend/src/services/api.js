@@ -1,5 +1,4 @@
-// src/services/Api.js
-const API_URL = "https://localhost:7176/api";
+const API_URL = "http://localhost:5076/api";
 
 export const api = {
     // ── Auth ──────────────────────────────────────────────────────────────────
@@ -227,6 +226,44 @@ export const api = {
         const token = localStorage.getItem('token');
         const response = await fetch(`${API_URL}/tags/seed`, {
             method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.json();
+    },
+    // ── Plans & Memory ────────────────────────────────────────────────────────────
+    saveDietPlan: async (planData) => {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_URL}/chat/save-diet`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify(planData),
+        });
+        return response.json();
+    },
+
+    saveExercisePlan: async (planData) => {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_URL}/chat/save-exercise`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify(planData),
+        });
+        return response.json();
+    },
+
+    likeVideo: async (videoData) => {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_URL}/chat/like-video`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify(videoData),
+        });
+        return response.json();
+    },
+
+    getLikedVideos: async () => {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_URL}/chat/liked-videos`, {
             headers: { Authorization: `Bearer ${token}` },
         });
         return response.json();

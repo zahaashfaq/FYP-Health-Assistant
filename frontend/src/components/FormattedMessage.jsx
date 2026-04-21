@@ -1,91 +1,74 @@
-// src/components/FormattedMessage.jsx
+// src/components/FormattedMessage.js
+import React from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
-export default function FormattedMessage({ text }) {
-  return (
-    <ReactMarkdown
-      components={{
-        h1: ({ children }) => (
-          <h3 style={{
-            color: "#b46cff", fontWeight: 700,
-            margin: "10px 0 6px", fontSize: 16
-          }}>
-            {children}
-          </h3>
-        ),
-        h2: ({ children }) => (
-          <h4 style={{
-            color: "#b46cff", fontWeight: 600,
-            margin: "8px 0 4px", fontSize: 15
-          }}>
-            {children}
-          </h4>
-        ),
-        h3: ({ children }) => (
-          <h5 style={{
-            color: "#d4a8ff", fontWeight: 600,
-            margin: "6px 0 4px", fontSize: 14
-          }}>
-            {children}
-          </h5>
-        ),
-        p: ({ children }) => (
-          <p style={{
-            margin: "4px 0", fontSize: 14,
-            color: "#e0e0e0", lineHeight: 1.7
-          }}>
-            {children}
-          </p>
-        ),
-        ul: ({ children }) => (
-          <ul style={{
-            paddingLeft: 18, margin: "6px 0",
-            listStyleType: "disc"
-          }}>
-            {children}
-          </ul>
-        ),
-        ol: ({ children }) => (
-          <ol style={{ paddingLeft: 18, margin: "6px 0" }}>
-            {children}
-          </ol>
-        ),
-        li: ({ children }) => (
-          <li style={{
-            marginBottom: 3, color: "#e0e0e0",
-            fontSize: 14, lineHeight: 1.6
-          }}>
-            {children}
-          </li>
-        ),
-        strong: ({ children }) => (
-          <strong style={{ color: "#b46cff", fontWeight: 700 }}>
-            {children}
-          </strong>
-        ),
-        em: ({ children }) => (
-          <em style={{ color: "#d4a8ff" }}>{children}</em>
-        ),
-        code: ({ children }) => (
-          <code style={{
-            background: "rgba(180,108,255,0.15)",
-            color: "#b46cff", borderRadius: 4,
-            padding: "1px 6px", fontSize: 13,
-            fontFamily: "monospace"
-          }}>
-            {children}
-          </code>
-        ),
-        hr: () => (
-          <hr style={{
-            border: "none",
-            borderTop: "1px solid rgba(255,255,255,0.1)",
-            margin: "8px 0"
-          }} />
-        ),
-      }}
-    >
-      {text ?? ""}
-    </ReactMarkdown>
-  );
-}
+const FormattedMessage = ({ text }) => {
+    return (
+        <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+                table: ({ node, ...props }) => (
+                    <div style={{ overflowX: "auto", marginTop: "10px" }}>
+                        <table
+                            style={{
+                                borderCollapse: "collapse",
+                                width: "100%",
+                                fontSize: "13px",
+                                color: "#e0d0ff",
+                            }}
+                            {...props}
+                        />
+                    </div>
+                ),
+                thead: ({ node, ...props }) => (
+                    <thead style={{ backgroundColor: "rgba(126,58,228,0.4)" }} {...props} />
+                ),
+                th: ({ node, ...props }) => (
+                    <th
+                        style={{
+                            padding: "8px 12px",
+                            border: "1px solid rgba(126,58,228,0.3)",
+                            textAlign: "left",
+                            fontWeight: 600,
+                        }}
+                        {...props}
+                    />
+                ),
+                td: ({ node, ...props }) => (
+                    <td
+                        style={{
+                            padding: "7px 12px",
+                            border: "1px solid rgba(126,58,228,0.2)",
+                        }}
+                        {...props}
+                    />
+                ),
+                tr: ({ node, ...props }) => (
+                    <tr
+                        style={{ backgroundColor: "transparent" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(126,58,228,0.1)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                        {...props}
+                    />
+                ),
+                p: ({ node, ...props }) => (
+                    <p style={{ margin: "4px 0", lineHeight: 1.6 }} {...props} />
+                ),
+                ul: ({ node, ...props }) => (
+                    <ul style={{ paddingLeft: "18px", margin: "6px 0" }} {...props} />
+                ),
+                li: ({ node, ...props }) => (
+                    <li style={{ margin: "3px 0" }} {...props} />
+                ),
+                strong: ({ node, ...props }) => (
+                    <strong style={{ color: "#b46cff" }} {...props} />
+                ),
+            }}
+        >
+            {text}
+        </ReactMarkdown>
+    );
+};
+
+export default FormattedMessage;

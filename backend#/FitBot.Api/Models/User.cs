@@ -18,5 +18,5 @@ namespace FitBot.Api.Models
         [JsonIgnore]
         public List<BmiLog> BmiLogs { get; set; } = new List<BmiLog>(); // <--- Add this
     
-}
+    }
 }

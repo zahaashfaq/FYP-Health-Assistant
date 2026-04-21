@@ -1,4 +1,4 @@
-// Program.cs  (full updated version)
+// Program.cs
 using FitBot.Api.Data;
 using FitBot.Api.Services;
 using Microsoft.EntityFrameworkCore;
@@ -11,40 +11,45 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// DB
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ── Register Services ──────────────────────────────────────────────────────
+// Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
-builder.Services.AddScoped<IChatService, ChatService>();  
+builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IVideoService, VideoService>();
 builder.Services.AddScoped<IPoseService, PoseService>();
 builder.Services.AddScoped<IMotionService, MotionService>();
 
-// ── HttpClient for AI API calls ────────────────────────────────────────────
-builder.Services.AddHttpClient();                          // <-- ADD THIS
+// HttpClient
+builder.Services.AddHttpClient();
 
-// ── CORS ──────────────────────────────────────────────────────────────────
+// CORS (IMPORTANT FIXED)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp",
-        policy => policy
-            .WithOrigins("http://localhost:3000", "https://localhost:3000")
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy
+            .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowAnyHeader());
+            .AllowCredentials()
+            .SetIsOriginAllowed(_ => true); // allows localhost + any dev origin
+    });
 });
 
-// ── JWT Auth ───────────────────────────────────────────────────────────────
-builder.Services.AddAuthentication().AddJwtBearer(options =>
+// JWT
+builder.Services.AddAuthentication()
+.AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        ValidateAudience = false,
         ValidateIssuer = false,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-            builder.Configuration.GetSection("Jwt:Key").Value!))
+        ValidateAudience = false,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 });
 
@@ -56,9 +61,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// ❌ IMPORTANT FIX: REMOVE HTTPS REDIRECT (causes your shutdown issue)
+app.UseHttpsRedirection(); // ❌ you can comment this out
+
 app.UseCors("AllowReactApp");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();

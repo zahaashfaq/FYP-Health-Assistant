@@ -22,6 +22,7 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.10.1",
     "react-scripts": "5.0.1",
+    "remark-gfm": "^4.0.1",
     "web-vitals": "^2.1.4",
     "yup": "^1.7.1"
   },
@@ -49,5 +50,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://localhost:7176/"
+  "proxy": "https://localhost:5076/"
 }
