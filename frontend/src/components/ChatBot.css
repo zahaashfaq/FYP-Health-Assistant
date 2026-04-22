@@ -1,0 +1,43 @@
+.chat-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-card::-webkit-scrollbar-thumb {
+  background-color: #7e3ae4;
+  border-radius: 10px;
+}
+
+.chat-card::-webkit-scrollbar-track {
+  background-color: #12091f;
+}
+
+
+/* ChatBot.css */
+
+/* Typing bubble for inline chatbot */
+.typing-bubble {
+  background: rgba(60, 40, 80, 0.9);
+  padding: 12px 18px;
+  border-radius: 18px;
+  border-bottom-left-radius: 4px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #b46cff;
+  display: inline-block;
+  animation: dotBounce 1.2s infinite ease-in-out;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
