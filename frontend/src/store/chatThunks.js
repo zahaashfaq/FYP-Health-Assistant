@@ -1,26 +1,29 @@
-import { addMessage, setLoading, setError, selectActiveMessages } from "./chatSlice";
+import { addMessage, setLoading, setError, selectActiveMessages, selectActiveSession } from "./chatSlice";
 import { api } from "../services/api";
 
 // ── Detect plan type from bot reply ──────────────────────────────────────────
 const detectPlanType = (text) => {
     const lower = text.toLowerCase();
-    const isDiet = lower.includes("calorie") || lower.includes("breakfast") ||
-        lower.includes("lunch") || lower.includes("dinner") || lower.includes("meal") ||
-        lower.includes("diet") || lower.includes("nutrition") || lower.includes("protein");
-    const isExercise = lower.includes("sets") || lower.includes("reps") ||
-        lower.includes("workout") || lower.includes("exercise") || lower.includes("day 1") ||
-        lower.includes("push") || lower.includes("pull") || lower.includes("legs");
+    const isDiet =
+        lower.includes("calorie") || lower.includes("breakfast") ||
+        lower.includes("lunch") || lower.includes("dinner") ||
+        lower.includes("meal") || lower.includes("diet") ||
+        lower.includes("nutrition") || lower.includes("protein");
+    const isExercise =
+        lower.includes("sets") || lower.includes("reps") ||
+        lower.includes("workout") || lower.includes("day 1") ||
+        lower.includes("split") || lower.includes("push") ||
+        lower.includes("pull") || lower.includes("legs");
     if (isDiet) return "diet";
     if (isExercise) return "exercise";
     return null;
 };
 
-// ── Extract deep memory facts from conversation ───────────────────────────────
-const extractMemoryFacts = (userText, botText) => {
+// ── Extract deep memory facts ─────────────────────────────────────────────────
+const extractMemoryFacts = (userText) => {
     const facts = [];
     const lower = userText.toLowerCase();
 
-    // Goal detection
     if (lower.includes("lose weight") || lower.includes("weight loss"))
         facts.push({ key: "goal", value: "weight_loss", category: "fitness" });
     else if (lower.includes("gain muscle") || lower.includes("build muscle") || lower.includes("bulk"))
@@ -28,7 +31,6 @@ const extractMemoryFacts = (userText, botText) => {
     else if (lower.includes("maintain"))
         facts.push({ key: "goal", value: "maintain", category: "fitness" });
 
-    // Diet preferences
     if (lower.includes("vegetarian"))
         facts.push({ key: "diet_type", value: "vegetarian", category: "diet" });
     else if (lower.includes("vegan"))
@@ -36,23 +38,20 @@ const extractMemoryFacts = (userText, botText) => {
     else if (lower.includes("keto"))
         facts.push({ key: "diet_type", value: "keto", category: "diet" });
 
-    // Injuries / health
     if (lower.includes("knee pain") || lower.includes("knee injury"))
-        facts.push({ key: "injury", value: "knee_pain", category: "medical" });
+        facts.push({ key: "injury_knee", value: "true", category: "medical" });
     if (lower.includes("back pain") || lower.includes("back injury"))
-        facts.push({ key: "injury", value: "back_pain", category: "medical" });
-    if (lower.includes("shoulder"))
-        facts.push({ key: "injury", value: "shoulder_pain", category: "medical" });
+        facts.push({ key: "injury_back", value: "true", category: "medical" });
+    if (lower.includes("shoulder pain") || lower.includes("shoulder injury"))
+        facts.push({ key: "injury_shoulder", value: "true", category: "medical" });
 
-    // Experience level
     if (lower.includes("beginner") || lower.includes("just started") || lower.includes("new to"))
         facts.push({ key: "experience", value: "beginner", category: "fitness" });
     else if (lower.includes("intermediate"))
         facts.push({ key: "experience", value: "intermediate", category: "fitness" });
-    else if (lower.includes("advanced") || lower.includes("years of"))
+    else if (lower.includes("advanced"))
         facts.push({ key: "experience", value: "advanced", category: "fitness" });
 
-    // Workout frequency preference
     const daysMatch = lower.match(/(\d)\s*days?\s*(a|per)\s*week/);
     if (daysMatch)
         facts.push({ key: "workout_days", value: daysMatch[1], category: "fitness" });
@@ -79,6 +78,10 @@ export const sendMessage = (inputText) => async (dispatch, getState) => {
         const state = getState();
         const { userProfile } = state.chat;
 
+        // Get active session ID to pass to backend for chat history
+        const activeSession = selectActiveSession(state);
+        const sessionId = activeSession?.id || `session-${Date.now()}`;
+
         const activeMessages = selectActiveMessages(state);
         const history = activeMessages.slice(-10).map((m) => ({
             role: m.sender === "user" ? "user" : "assistant",
@@ -89,9 +92,9 @@ export const sendMessage = (inputText) => async (dispatch, getState) => {
             message: inputText.trim(),
             history,
             userProfile,
+            sessionId,  // ← send session ID so backend saves chat history
         });
 
-        // Detect plan type from the bot's reply
         const planType = response.planType || detectPlanType(response.reply || "");
 
         const botMessage = {
@@ -102,18 +105,20 @@ export const sendMessage = (inputText) => async (dispatch, getState) => {
             source: response.source || "ai",
             videos: response.videos || null,
             videoMessage: response.videoMessage || null,
-            planType: planType,           // "diet" | "exercise" | null
-            planText: response.reply,     // full text to save as JSON
+            planType: planType,
+            planText: response.reply,
         };
 
         dispatch(addMessage(botMessage));
 
-        // ── Save deep memory facts silently in background ─────────────────────────
-        const facts = extractMemoryFacts(inputText.trim(), response.reply || "");
-        if (facts.length > 0) {
-            const token = localStorage.getItem("token");
-            if (token) {
-                api.upsertMemory(facts).catch(() => { }); // silent — don't block UI
+        // ── Save deep memory silently ─────────────────────────────────────────
+        const token = localStorage.getItem("token");
+        if (token) {
+            const facts = extractMemoryFacts(inputText.trim());
+            if (facts.length > 0) {
+                api.upsertMemory(facts).catch((e) => {
+                    console.warn("Memory save failed:", e.message);
+                });
             }
         }
 

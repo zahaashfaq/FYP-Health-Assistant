@@ -1,11 +1,11 @@
-﻿// DTOs/ChatRequestDto.cs
-namespace FitBot.Api.DTOs
+﻿namespace FitBot.Api.DTOs
 {
     public class ChatRequestDto
     {
         public string Message { get; set; } = string.Empty;
         public List<ChatHistoryItem> History { get; set; } = new();
         public object? UserProfile { get; set; }
+        public string? SessionId { get; set; }  // ← ADD THIS
     }
 
     public class ChatHistoryItem
@@ -33,15 +33,15 @@ namespace FitBot.Api.DTOs
     public class LikeVideoDto
     {
         public string VideoId { get; set; } = "";
-        public string Title { get; set; } = "";
+        public string? Title { get; set; }
         public string? ThumbnailUrl { get; set; }
-        public string YoutubeUrl { get; set; } = "";
+        public string? YoutubeUrl { get; set; }
     }
 
     public class DeepMemoryDto
     {
         public string Key { get; set; } = "";
-        public string Value { get; set; } = "";
+        public string? Value { get; set; }
         public string? Category { get; set; }
     }
 }

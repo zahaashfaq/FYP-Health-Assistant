@@ -103,7 +103,8 @@ export const api = {
     },
 
     // ── Chat ────────────────────────────────────────────────────────────────────
-    sendChatMessage: async ({ message, history, userProfile }) => {
+    // ✅ sessionId added — backend uses it to save chat history automatically
+    sendChatMessage: async ({ message, history, userProfile, sessionId }) => {
         const token = localStorage.getItem("token");
         const response = await fetch(`${API_URL}/chat/message`, {
             method: "POST",
@@ -111,7 +112,7 @@ export const api = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ message, history, userProfile }),
+            body: JSON.stringify({ message, history, userProfile, sessionId }),
         });
         if (!response.ok) {
             const text = await response.text();
@@ -140,7 +141,10 @@ export const api = {
             },
             body: JSON.stringify(planData),
         });
-        if (!response.ok) throw new Error("Failed to save diet plan");
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || "Failed to save diet plan");
+        }
         return response.json();
     },
 
@@ -154,7 +158,10 @@ export const api = {
             },
             body: JSON.stringify(planData),
         });
-        if (!response.ok) throw new Error("Failed to save exercise plan");
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || "Failed to save exercise plan");
+        }
         return response.json();
     },
 
@@ -224,9 +231,14 @@ export const api = {
     },
 
     // ── Like Video ──────────────────────────────────────────────────────────────
+    // ✅ fixed — handles all possible field name shapes from backend
     likeVideo: async (videoData) => {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("Not logged in");
+
+        const videoId = videoData.videoId || videoData.id || "";
+        if (!videoId) throw new Error("Video ID is missing");
+
         const response = await fetch(`${API_URL}/chat/like-video`, {
             method: "POST",
             headers: {
@@ -234,11 +246,13 @@ export const api = {
                 Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-                videoId: videoData.videoId || videoData.id || "",
-                title: videoData.title || "",
+                videoId: String(videoId),
+                title: videoData.title || "Untitled",
                 thumbnailUrl: videoData.thumbnailUrl || videoData.thumbnail || "",
-                youtubeUrl: videoData.youtubeUrl || videoData.url ||
-                    `https://youtube.com/watch?v=${videoData.videoId || videoData.id}`,
+                youtubeUrl:
+                    videoData.youtubeUrl ||
+                    videoData.url ||
+                    `https://youtube.com/watch?v=${videoId}`,
             }),
         });
         if (!response.ok) {
@@ -257,21 +271,30 @@ export const api = {
     },
 
     // ── Deep Memory ─────────────────────────────────────────────────────────────
+    // ✅ fixed — sends correct shape backend expects
     upsertMemory: async (items) => {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!token) return false;
         const response = await fetch(`${API_URL}/chat/memory`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
             },
-            // Backend expects: [{ key, value, category }]
             body: JSON.stringify(
-                items.map((i) => ({ key: i.key, value: i.value, category: i.category || null }))
+                items.map((i) => ({
+                    key: i.key,
+                    value: i.value || "",
+                    category: i.category || null,
+                }))
             ),
         });
-        return response.ok;
+        if (!response.ok) {
+            const text = await response.text();
+            console.warn("Memory upsert failed:", text);
+            return false;
+        }
+        return true;
     },
 
     getMemory: async () => {
