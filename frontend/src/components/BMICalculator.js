@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Container, Row, Col, Form, Button, Card, Nav } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const FLASK_URL = "http://localhost:5050";
+const FLASK_URL = process.env.REACT_APP_FLASK_URL || "http://localhost:5050";
 
 const BMICalculator = () => {
     // ── Manual tab ──
